@@ -85,7 +85,7 @@ export const askAIAboutNotesAction = async (
 
     // Create a structured formatting of notes with numbering
     const formattedNotes = notes
-      .map((note, index) => {
+      .map((note: { id: string; text: string; createdAt: Date; updatedAt: Date }, index) => {
         const noteNumber = index + 1;
         return `
         =============== NOTE ${noteNumber} (ID: ${note.id}) ===============
