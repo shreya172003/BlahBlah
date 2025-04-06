@@ -28,12 +28,11 @@ let updateTimeout: NodeJS.Timeout;
 function NoteTextInput({ noteId, startingNoteText }: Props) {
   const noteIdParam = useSearchParams().get("noteId") || "";
   const { noteText, setNoteText } = useNote();
-  const editorRef = useRef<HTMLDivElement>(null);
-  const headingRef = useRef<HTMLDivElement>(null);
-  const { theme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const { resolvedTheme } = useTheme();
+  const headingRef = useRef<HTMLDivElement>(null);
+  const editorRef = useRef<HTMLDivElement>(null);
 
-  // Only show the UI after first mount to avoid hydration mismatch
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -41,41 +40,31 @@ function NoteTextInput({ noteId, startingNoteText }: Props) {
   useEffect(() => {
     if (noteIdParam === noteId) {
       setNoteText(startingNoteText);
-      const [heading, ...content] = startingNoteText.split('\n');
       if (headingRef.current) {
-        headingRef.current.innerText = heading || 'Enter note heading...';
+        headingRef.current.textContent = startingNoteText.split("\n")[0] || "Enter note heading...";
       }
       if (editorRef.current) {
-        editorRef.current.innerHTML = content.join('\n');
+        editorRef.current.innerHTML = startingNoteText.split("\n").slice(1).join("\n") || "";
       }
     }
   }, [startingNoteText, noteIdParam, noteId, setNoteText]);
 
-  // Reset heading and content when noteId changes
-  useEffect(() => {
-    if (headingRef.current) {
-      headingRef.current.innerText = 'Enter note heading...';
-    }
-    if (editorRef.current) {
-      editorRef.current.innerHTML = '';
-    }
-  }, [noteId]);
-
   const handleUpdateNote = () => {
-    if (!editorRef.current || !headingRef.current) return;
+    if (!headingRef.current || !editorRef.current) return;
     
-    const content = editorRef.current.innerHTML;
-    const heading = headingRef.current.innerText === 'Enter note heading...' ? '' : headingRef.current.innerText;
-    const newNoteText = `${heading}\n${content}`;
-    setNoteText(newNoteText);
-
+    const heading = headingRef.current.textContent || "";
+    const content = editorRef.current.innerHTML || "";
+    const fullText = `${heading}\n${content}`;
+    
+    setNoteText(fullText);
+    
     clearTimeout(updateTimeout);
     updateTimeout = setTimeout(() => {
-      updateNoteAction(noteId, newNoteText);
+      updateNoteAction(noteId, fullText);
     }, 1500);
   };
 
-  const handleHeadingKeyDown = (e: React.KeyboardEvent) => {
+  const handleHeadingKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key === "Enter") {
       e.preventDefault();
       editorRef.current?.focus();

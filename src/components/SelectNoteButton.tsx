@@ -13,18 +13,18 @@ type Props = {
 
 function SelectNoteButton({ note }: Props) {
   const noteId = useSearchParams().get("noteId") || "";
-
-  const { noteText: selectedNoteText } = useNote();
+  const { noteText: selectedNoteText, setNoteText } = useNote();
   const [shouldUseGlobalNoteText, setShouldUseGlobalNoteText] = useState(false);
   const [localNoteText, setLocalNoteText] = useState(note.text);
 
   useEffect(() => {
     if (noteId === note.id) {
       setShouldUseGlobalNoteText(true);
+      setNoteText(note.text); // Set the global note text when this note is selected
     } else {
       setShouldUseGlobalNoteText(false);
     }
-  }, [noteId, note.id]);
+  }, [noteId, note.id, note.text, setNoteText]);
 
   useEffect(() => {
     if (shouldUseGlobalNoteText) {
